@@ -73,7 +73,7 @@ export default {
   methods: {
     async handleLogin() {
       // Temporary backdoor for development
-      if (this.email === '1111@test.ac.kr' && this.password === '1111') {
+      if (this.email === '1111@test.co.kr' && this.password === '1111') {
         console.log("개발용 임시 로그인 성공");
         const dummyUser = {
           user_id: 1111,

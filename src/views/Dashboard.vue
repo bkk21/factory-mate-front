@@ -36,7 +36,7 @@
 
             <div class="bg-white rounded-lg shadow-sm p-6 border">
               <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-semibold">중요피쳐: {{ selectedFeatureName }}</h2>
+                <h2 class="text-lg font-semibold">중요 지표: {{ selectedFeatureName }}</h2>
               </div>
               <div class="flex gap-6">
                 <div class="w-56">

@@ -14,9 +14,22 @@
         <div v-if="report">
           <!-- Header -->
           <div class="mb-8 flex items-center">
-            <button @click="$router.push('/notes')" class="text-gray-600 hover:text-gray-900 mr-4">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <button
+              @click="$router.push('/notes')"
+              class="text-gray-600 hover:text-gray-900 mr-4"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <div>
@@ -31,24 +44,69 @@
           <!-- Body Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Left Column: Chat -->
-            <div class="bg-white rounded-lg shadow-sm p-6 flex flex-col h-[70vh]">
+            <div
+              class="bg-white rounded-lg shadow-sm p-6 flex flex-col h-[70vh]"
+            >
               <h2 class="text-xl font-semibold mb-4">Rino Chat</h2>
               <div class="flex-grow overflow-y-auto mb-4 pr-4 space-y-4">
                 <!-- Initial AI Message -->
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"></path></svg>
+                  <div
+                    class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg
+                      class="w-5 h-5 text-indigo-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"
+                      ></path>
+                    </svg>
                   </div>
                   <div class="bg-gray-100 rounded-lg p-3">
-                    <p class="text-sm">리노에게 회의에 관한 내용을 물어보세요.</p>
+                    <p class="text-sm">
+                      리노에게 회의에 관한 내용을 물어보세요.
+                    </p>
                   </div>
                 </div>
                 <!-- Chat Messages -->
-                <div v-for="(message, index) in chatMessages" :key="index" class="flex" :class="message.isUser ? 'justify-end' : 'items-start gap-3'">
-                   <div v-if="!message.isUser" class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                     <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"></path></svg>
-                   </div>
-                   <div class="rounded-lg p-3 max-w-xs" :class="message.isUser ? 'bg-indigo-500 text-white' : 'bg-gray-100'">
+                <div
+                  v-for="(message, index) in chatMessages"
+                  :key="index"
+                  class="flex"
+                  :class="message.isUser ? 'justify-end' : 'items-start gap-3'"
+                >
+                  <div
+                    v-if="!message.isUser"
+                    class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg
+                      class="w-5 h-5 text-indigo-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div
+                    class="rounded-lg p-3 max-w-xs"
+                    :class="
+                      message.isUser
+                        ? 'bg-indigo-500 text-white'
+                        : 'bg-gray-100'
+                    "
+                  >
                     <p class="text-sm">{{ message.text }}</p>
                   </div>
                 </div>
@@ -62,42 +120,82 @@
                   placeholder="무엇이든 물어보세요."
                   class="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                <button @click="handleSendMessage" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                <button
+                  @click="handleSendMessage"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 10l7-7m0 0l7 7m-7-7v18"
+                    ></path>
+                  </svg>
                 </button>
               </div>
             </div>
 
             <!-- Right Column: Summary -->
-            <div class="bg-white rounded-lg shadow-sm p-8 overflow-y-auto h-[70vh]">
+            <div
+              class="bg-white rounded-lg shadow-sm p-8 overflow-y-auto h-[70vh]"
+            >
               <h2 class="text-xl font-semibold mb-6">회의 요약</h2>
               <div class="space-y-6 text-gray-800">
                 <div>
                   <h3 class="font-semibold text-lg mb-2">1. 회의 요약</h3>
-                  <p class="whitespace-pre-wrap text-sm">{{ report.summary }}</p>
+                  <p class="whitespace-pre-wrap text-sm">
+                    {{ report.summary }}
+                  </p>
                 </div>
                 <div v-if="reportDetails.risks_and_concerns">
                   <h3 class="font-semibold text-lg mb-2">2. 주요 논의사항</h3>
                   <ul class="list-disc list-inside space-y-1 text-sm">
-                    <li v-for="(item, i) in reportDetails.risks_and_concerns" :key="'risk-'+i">{{ item }}</li>
+                    <li
+                      v-for="(item, i) in reportDetails.risks_and_concerns"
+                      :key="'risk-' + i"
+                    >
+                      {{ item }}
+                    </li>
                   </ul>
                 </div>
                 <div v-if="reportDetails.decisions">
                   <h3 class="font-semibold text-lg mb-2">3. 결정사항</h3>
                   <ul class="list-disc list-inside space-y-1 text-sm">
-                    <li v-for="(item, i) in reportDetails.decisions" :key="'decision-'+i">{{ item }}</li>
+                    <li
+                      v-for="(item, i) in reportDetails.decisions"
+                      :key="'decision-' + i"
+                    >
+                      {{ item }}
+                    </li>
                   </ul>
                 </div>
-                <div v-if="report.action_items && report.action_items.length > 0">
+                <div
+                  v-if="report.action_items && report.action_items.length > 0"
+                >
                   <h3 class="font-semibold text-lg mb-2">4. 액션 아이템</h3>
                   <ul class="list-disc list-inside space-y-1 text-sm">
-                    <li v-for="item in report.action_items" :key="item.item_id">{{ item.title }} - {{ item.assignee }}</li>
+                    <li v-for="item in report.action_items" :key="item.item_id">
+                      {{ item.title }} - {{ item.assignee }}
+                    </li>
                   </ul>
                 </div>
                 <div v-if="reportDetails.next_steps">
-                  <h3 class="font-semibold text-lg mb-2">5. 향후 일정 및 계획</h3>
+                  <h3 class="font-semibold text-lg mb-2">
+                    5. 향후 일정 및 계획
+                  </h3>
                   <ul class="list-disc list-inside space-y-1 text-sm">
-                    <li v-for="(item, i) in reportDetails.next_steps" :key="'step-'+i">{{ item }}</li>
+                    <li
+                      v-for="(item, i) in reportDetails.next_steps"
+                      :key="'step-' + i"
+                    >
+                      {{ item }}
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -123,11 +221,11 @@ export default {
       report: null,
       isLoading: true,
       error: null,
-      noteTitle: '회의록',
-      noteCategory: '기본 폴더',
-      noteDate: '',
+      noteTitle: "회의록",
+      noteCategory: "기본 폴더",
+      noteDate: "",
       chatMessages: [],
-      userMessage: '',
+      userMessage: "",
     };
   },
   computed: {
@@ -142,8 +240,8 @@ export default {
     },
     formattedDate() {
       if (!this.report) return this.noteDate;
-      return new Date(this.report.created_at).toLocaleString('ko-KR');
-    }
+      return new Date(this.report.created_at).toLocaleString("ko-KR");
+    },
   },
   methods: {
     async handleSendMessage() {
@@ -151,26 +249,28 @@ export default {
       if (!messageText) return;
 
       this.chatMessages.push({ text: messageText, isUser: true });
-      this.userMessage = '';
+      this.userMessage = "";
 
       // Dummy 하드코딩 로직
-    let reply = null;
+      let reply = null;
 
-    if (messageText.includes('결정사항')) {
-      reply = '네, 회의의 결정사항은 다음과 같습니다: 1. 청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다. 2. 청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.';
-    } else if (messageText === '회의 주제 요약') {
-      reply = this.report.summary; // 더미 report.summary 그대로 출력
-    } else if (messageText.includes('결정사항')) {
-      reply = this.reportDetails.decisions?.join('\n') || '결정사항 데이터가 없습니다.';
-    } else {
-      // 기본 더미 응답
-      reply = `"${messageText}"에 대한 답변입니다.`;
-    }
+      if (messageText.includes("결정사항")) {
+        reply = '네, 회의의 결정사항은 다음과 같습니다: 1. 생산 라인의 일부 구간을 자동화 설비로 교체한다. 2. 작업자 안전 교육을 정기적으로 실시한다.';
+      } else if (messageText === "회의 주제 요약") {
+        reply = this.report.summary; // 더미 report.summary 그대로 출력
+      } else if (messageText.includes("결정사항")) {
+        reply =
+          this.reportDetails.decisions?.join("\n") ||
+          "결정사항 데이터가 없습니다.";
+      } else {
+        // 기본 더미 응답
+        reply = `"${messageText}"에 대한 답변입니다.`;
+      }
 
       // Dummy response for UI check
       setTimeout(() => {
-      this.chatMessages.push({ text: reply, isUser: false });
-    }, 500)
+        this.chatMessages.push({ text: reply, isUser: false });
+      }, 500);
 
       /*
       // NOTE: Real API call is commented out.
@@ -182,7 +282,7 @@ export default {
         this.chatMessages.push({ text: '오류가 발생했습니다: ' + err.message, isUser: false });
       }
       */
-    }
+    },
   },
   mounted() {
     // Load initial data from localStorage
@@ -197,27 +297,32 @@ export default {
     // --- Dummy Data Implementation ---
     console.log("Using dummy data for NoteDone.vue");
     const dummyReport = {
-        summary: "청년 시기의 중요성에 대한 논의를 중심으로 회의가 진행되었습니다. 자기 주체적인 선택과 부모로부터의 독립이 중요한 시기로 인식되었습니다.",
-        details: JSON.stringify({
-            risks_and_concerns: [
-                "청년 시기의 정의와 중요성에 대한 공통 인식 확립",
-                "자기 주체적 선택과 부모로부터의 독립이 주요 요소로 부각",
-                "청년 시기에 필요한 지원과 교육 프로그램에 대한 논의"
-            ],
-            decisions: [
-                "청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다.",
-                "청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다."
-            ],
-            next_steps: [
-                "교육 및 지원 프로그램 개발 완료 후 다음 회의에서 보고 예정",
-                "청년 시기 중요성 강조하는 캠페인 계획 수립하여 추후 발표 예정"
-            ]
-        }),
-        action_items: [
-            { item_id: 1, title: "교육 프로그램 개발", assignee: "A팀 담당" },
-            { item_id: 2, title: "지원 프로그램 마련", assignee: "B팀 담당" },
+      summary:
+        "공장 운영 효율화와 안전 관리 강화를 중심으로 회의가 진행되었습니다. 생산 라인의 자동화와 작업자 안전 교육이 주요 의제로 다뤄졌습니다.",
+      details: JSON.stringify({
+        risks_and_concerns: [
+          "생산 라인 설비 노후화로 인한 고장 위험",
+          "작업자 안전 수칙 미준수 사례 발생",
+          "에너지 사용량 증가에 따른 비용 부담",
         ],
-        created_at: new Date().toISOString(),
+        decisions: [
+          "생산 라인의 일부 구간을 자동화 설비로 교체한다.",
+          "작업자 안전 교육을 정기적으로 실시한다.",
+        ],
+        next_steps: [
+          "자동화 설비 도입을 위한 예산안 마련 후 다음 회의에서 보고",
+          "안전 교육 커리큘럼을 확정하여 전 직원 대상 시행 예정",
+        ],
+      }),
+      action_items: [
+        { item_id: 1, title: "자동화 설비 도입 계획 수립", assignee: "생산팀" },
+        {
+          item_id: 2,
+          title: "안전 교육 프로그램 준비",
+          assignee: "안전관리팀",
+        },
+      ],
+      created_at: new Date().toISOString(),
     };
     this.report = dummyReport;
     this.isLoading = false;
