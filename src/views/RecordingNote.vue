@@ -284,7 +284,12 @@
 <script>
 import MainLayout from "../layouts/MainLayout.vue";
 import TimelineItem from "../components/TimelineItem.vue";
-import { uploadRecording, uploadPpt, generateSummary, endMeeting } from "../api/meetings.js";
+import {
+  uploadRecording,
+  uploadPpt,
+  generateSummary,
+  endMeeting,
+} from "../api/meetings.js";
 
 export default {
   name: "RecordingNote",
@@ -333,9 +338,12 @@ export default {
           "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         ];
         const allowedExtensions = [".ppt", ".pptx"];
-        const fileExtension = "." + file.name.split('.').pop().toLowerCase();
+        const fileExtension = "." + file.name.split(".").pop().toLowerCase();
 
-        if (allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension)) {
+        if (
+          allowedTypes.includes(file.type) ||
+          allowedExtensions.includes(fileExtension)
+        ) {
           this.uploadedFileName = file.name;
           this.uploadedFileSize = this.formatFileSize(file.size);
           this.uploadPptFile(file);
@@ -346,21 +354,21 @@ export default {
       }
     },
     async uploadPptFile(file) {
-        if (!this.note || !this.note.external_id) {
-          alert("회의 정보를 찾을 수 없어 PPT를 업로드할 수 없습니다.");
-          if (!this.note) this.note = {};
-          this.note.external_id = 'test-meeting-123';
-        }
-        try {
-            console.log("PPT 업로드 시작...");
-            const result = await uploadPpt(this.note.external_id, file);
-            console.log("PPT 업로드 성공:", result);
-            alert("PPT 파일이 성공적으로 업로드되었습니다.");
-        } catch (error) {
-            console.error("PPT 파일 업로드 실패:", error);
-            alert(`PPT 파일 업로드 실패: ${error.message}`);
-            this.removeFile();
-        }
+      if (!this.note || !this.note.external_id) {
+        alert("회의 정보를 찾을 수 없어 PPT를 업로드할 수 없습니다.");
+        if (!this.note) this.note = {};
+        this.note.external_id = "test-meeting-123";
+      }
+      try {
+        console.log("PPT 업로드 시작...");
+        const result = await uploadPpt(this.note.external_id, file);
+        console.log("PPT 업로드 성공:", result);
+        alert("PPT 파일이 성공적으로 업로드되었습니다.");
+      } catch (error) {
+        console.error("PPT 파일 업로드 실패:", error);
+        alert(`PPT 파일 업로드 실패: ${error.message}`);
+        this.removeFile();
+      }
     },
     removeFile() {
       this.uploadedFileName = "";
@@ -373,61 +381,69 @@ export default {
       return (bytes / (1024 * 1024)).toFixed(1) + " MB";
     },
     async completeRecording() {
+      // 더미데이터
       if (this.isRecordingStarted) {
-        if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
-          this.mediaRecorder.stop();
-        }
+        // 녹음 완료하기 → 바로 NoteDone.vue 이동 (더미 데이터 표시)
+        this.isRecordingStarted = false;
+        this.isPlaying = false;
+
+        console.log("시연 모드: 녹음 완료 처리, NoteDone.vue로 이동");
+        this.$router.push(`/note-done/demo-meeting`);
       } else {
-        if (!this.note || !this.note.external_id) {
-          alert("녹음 정보를 찾을 수 없습니다. 먼저 새 녹음을 시작해주세요.");
-          return;
-        }
-
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          this.mediaRecorder = new MediaRecorder(stream);
-
-          this.mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-              this.audioChunks.push(event.data);
-            }
-          };
-
-          this.mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(this.audioChunks, { type: "audio/wav" });
-            this.audioChunks = [];
-            stream.getTracks().forEach((track) => track.stop());
-            this.isRecordingStarted = false;
-            this.isPlaying = false;
-
-            try {
-              console.log("Final audio chunk uploading...");
-              await uploadRecording(this.note.external_id, audioBlob);
-              console.log("Final audio chunk upload successful.");
-
-              console.log("Ending meeting and generating report...");
-              // TODO: Replace with actual user ID and desired report type
-              const endRequestData = { report_type: 'DEFAULT', created_by: 1 };
-              const finalReport = await endMeeting(this.note.external_id, endRequestData);
-              console.log("Meeting ended successfully:", finalReport);
-
-              alert("녹음이 완료되어 최종 보고서가 생성되었습니다.");
-              this.$router.push(`/note-done/${this.note.external_id}`);
-
-            } catch (error) {
-              console.error("Failed to finalize recording:", error);
-              alert(`녹음 완료 처리 중 오류가 발생했습니다: ${error.message}`);
-            }
-          };
-
-          this.mediaRecorder.start();
-          this.isRecordingStarted = true;
-          this.isPlaying = true;
-        } catch (error) {
-          console.error("Error accessing microphone:", error);
-          alert("마이크에 접근할 수 없습니다. 권한을 확인해주세요.");
-        }
+        // 녹음 시작하기 → 실제 녹음 대신 시연 로그만 출력
+        console.log("시연 모드: 녹음 시작 (실제 마이크 녹음 없음)");
+        this.isRecordingStarted = true;
+        this.isPlaying = true;
       }
+
+      // if (this.isRecordingStarted) {
+      //   if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+      //     this.mediaRecorder.stop();
+      //   }
+      // } else {
+      //   if (!this.note || !this.note.external_id) {
+      //     alert("녹음 정보를 찾을 수 없습니다. 먼저 새 녹음을 시작해주세요.");
+      //     return;
+      //   }
+
+      //   try {
+      //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      //     this.mediaRecorder = new MediaRecorder(stream);
+
+      //     this.mediaRecorder.ondataavailable = (event) => {
+      //       if (event.data.size > 0) {
+      //         this.audioChunks.push(event.data);
+      //       }
+      //     };
+
+      //     this.mediaRecorder.onstop = async () => {
+      //       const audioBlob = new Blob(this.audioChunks, { type: "audio/wav" });
+      //       this.audioChunks = [];
+      //       stream.getTracks().forEach((track) => track.stop());
+      //       this.isRecordingStarted = false;
+      //       this.isPlaying = false;
+
+      //       try {
+      //         console.log("Final audio chunk uploading...");
+      //         await uploadRecording(this.note.external_id, audioBlob);
+      //         console.log("Final audio chunk upload successful.");
+
+      //         this.$router.push(`/note-done/${this.note.external_id}`);
+
+      //       } catch (error) {
+      //         console.error("Failed to finalize recording:", error);
+      //         alert(`녹음 완료 처리 중 오류가 발생했습니다: ${error.message}`);
+      //       }
+      //     };
+
+      //     this.mediaRecorder.start();
+      //     this.isRecordingStarted = true;
+      //     this.isPlaying = true;
+      //   } catch (error) {
+      //     console.error("Error accessing microphone:", error);
+      //     alert("마이크에 접근할 수 없습니다. 권한을 확인해주세요.");
+      //   }
+      // }
     },
     async handleGenerateSummary() {
       if (!this.note || !this.note.external_id) {
@@ -439,7 +455,10 @@ export default {
         const result = await generateSummary(this.note.external_id);
         console.log("중간 요약 성공:", result);
 
-        const newTime = new Date(result.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        const newTime = new Date(result.timestamp).toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
         const newItem = {
           time: newTime,
           title: "중간 요약 " + this.summaryCounter,
@@ -450,7 +469,6 @@ export default {
         this.leftTimeline.push(newItem);
         this.summaryCounter++;
         alert("중간 요약이 타임라인에 추가되었습니다.");
-
       } catch (error) {
         console.error("중간 요약 생성 실패:", error);
         alert(`중간 요약 생성 실패: ${error.message}`);

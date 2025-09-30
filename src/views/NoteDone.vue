@@ -153,10 +153,24 @@ export default {
       this.chatMessages.push({ text: messageText, isUser: true });
       this.userMessage = '';
 
+      // Dummy 하드코딩 로직
+    let reply = null;
+
+    if (messageText.includes('결정사항')) {
+      reply = '네, 회의의 결정사항은 다음과 같습니다: 1. 청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다. 2. 청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.';
+    } else if (messageText === '회의 주제 요약') {
+      reply = this.report.summary; // 더미 report.summary 그대로 출력
+    } else if (messageText.includes('결정사항')) {
+      reply = this.reportDetails.decisions?.join('\n') || '결정사항 데이터가 없습니다.';
+    } else {
+      // 기본 더미 응답
+      reply = `"${messageText}"에 대한 답변입니다.`;
+    }
+
       // Dummy response for UI check
       setTimeout(() => {
-          this.chatMessages.push({ text: `"${messageText}"에 대한 답변입니다.`, isUser: false });
-      }, 1000);
+      this.chatMessages.push({ text: reply, isUser: false });
+    }, 500)
 
       /*
       // NOTE: Real API call is commented out.
@@ -208,10 +222,10 @@ export default {
     this.report = dummyReport;
     this.isLoading = false;
 
-    this.chatMessages = [
-        { text: "회의에서 나온 결정사항들을 정리해줘.", isUser: true },
-        { text: "네, 회의의 결정사항은 다음과 같습니다: 1. 청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다. 2. 청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.", isUser: false },
-    ];
+    // this.chatMessages = [
+    //     { text: "회의에서 나온 결정사항들을 정리해줘.", isUser: true },
+    //     { text: "네, 회의의 결정사항은 다음과 같습니다: 1. 청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다. 2. 청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.", isUser: false },
+    // ];
     // --- End of Dummy Data ---
 
     /*
