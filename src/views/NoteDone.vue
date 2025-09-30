@@ -1,288 +1,105 @@
 <template>
   <MainLayout>
-    <div class="p-8">
+    <div class="p-8 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <button
-              @click="$router.push('/notes')"
-              class="text-gray-600 hover:text-gray-900"
-            >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 19l-7-7 7-7"
-                />
+        <!-- Loading and Error States -->
+        <div v-if="isLoading" class="text-center py-20">
+          <p>회의록을 불러오는 중입니다...</p>
+        </div>
+        <div v-else-if="error" class="text-center py-20 text-red-500">
+          <p>오류가 발생했습니다: {{ error }}</p>
+        </div>
+
+        <!-- Main Content -->
+        <div v-if="report">
+          <!-- Header -->
+          <div class="mb-8 flex items-center">
+            <button @click="$router.push('/notes')" class="text-gray-600 hover:text-gray-900 mr-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-
             <div>
-              <div class="flex items-center gap-2">
-                <svg
-                  class="w-5 h-5 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                <h1 class="text-2xl font-bold text-gray-900">
-                  {{ noteTitle }}
-                </h1>
-              </div>
+              <h1 class="text-2xl font-bold text-gray-900">{{ noteTitle }}</h1>
               <div class="flex items-center gap-4 mt-1 text-sm text-gray-500">
                 <span>{{ noteCategory }}</span>
-                <span v-if="noteDate">{{ noteDate }}</span>
-                <span v-if="noteDuration">{{ noteDuration }}</span>
+                <span>{{ formattedDate }}</span>
               </div>
             </div>
           </div>
 
-          <button
-            @click="completeRecording"
-            class="px-6 py-2 rounded-lg transition-colors"
-            :class="
-              isRecordingStarted
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            "
-          >
-            {{ isRecordingStarted ? "녹음 완료하기" : "녹음 시작하기" }}
-          </button>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-gray-500 text-sm">00:00</div>
-            <div class="text-gray-500 text-sm">05:00</div>
-          </div>
-
-          <div class="flex items-center justify-center gap-8 mb-4">
-            <button
-              @click="changeSpeed"
-              class="text-gray-600 hover:text-gray-900 font-medium"
-            >
-              {{ playbackSpeed }}x
-            </button>
-
-            <button @click="rewind" class="text-gray-600 hover:text-gray-900">
-              <svg
-                class="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"
-                />
-              </svg>
-            </button>
-
-            <button
-              @click="togglePlay"
-              class="w-16 h-16 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors"
-            >
-              <svg
-                v-if="!isRecordingStarted || !isPlaying"
-                class="w-8 h-8 text-white ml-1"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <svg
-                v-else
-                class="w-8 h-8 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            </button>
-
-            <button @click="forward" class="text-gray-600 hover:text-gray-900">
-              <svg
-                class="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-8">
-          <div v-if="isRecordingStarted" class="bg-gray-50 rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900">총간 요약</h2>
-              <button
-                @click="addSummary"
-                class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
-              >
-                중간 요약하기
-              </button>
-            </div>
-
-            <div class="mb-6 flex items-start gap-2 text-sm text-gray-600">
-              <svg
-                class="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>지금까지의 회의 내용을 요약해 확인해보세요.</span>
-            </div>
-
-            <div class="space-y-6">
-              <TimelineItem
-                v-for="(item, index) in leftTimeline"
-                :key="index"
-                :item="item"
-              />
-            </div>
-          </div>
-
-          <div v-if="isRecordingStarted" class="bg-gray-50 rounded-lg p-6">
-            <div class="space-y-6">
-              <TimelineItem
-                v-for="(item, index) in rightTimeline"
-                :key="index"
-                :item="item"
-              />
-            </div>
-          </div>
-
-          <div
-            v-if="!isRecordingStarted"
-            class="col-span-2 bg-white rounded-lg shadow-sm p-12 text-center"
-          >
-            <h2 class="text-xl font-semibold text-gray-900 mb-8">
-              PDF 업로드하기
-            </h2>
-
-            <!-- Hidden File Input -->
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".pdf,application/pdf"
-              @change="handleFileSelect"
-              style="display: none"
-            />
-
-            <!-- Upload Area -->
-            <div v-if="!uploadedFile">
-              <label
-                class="border-2 border-dashed rounded-lg p-12 transition-colors cursor-pointer block"
-                :class="
-                  isDragging
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                "
-                @dragover.prevent="isDragging = true"
-                @dragleave.prevent="isDragging = false"
-                @drop.prevent="handleDrop"
-                @click="openFileDialog"
-              >
-                <div class="flex flex-col items-center pointer-events-none">
-                  <div
-                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
-                  >
-                    <svg
-                      class="w-8 h-8 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+          <!-- Body Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Column: Chat -->
+            <div class="bg-white rounded-lg shadow-sm p-6 flex flex-col h-[70vh]">
+              <h2 class="text-xl font-semibold mb-4">Rino Chat</h2>
+              <div class="flex-grow overflow-y-auto mb-4 pr-4 space-y-4">
+                <!-- Initial AI Message -->
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"></path></svg>
                   </div>
-                  <p class="text-gray-500">
-                    PDF 파일을 드래그하거나 클릭하여 업로드
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <!-- Uploaded File Display -->
-            <div v-else class="border-2 border-gray-300 rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
-                  >
-                    <svg
-                      class="w-6 h-6 text-red-600"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
-                      />
-                      <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3" />
-                    </svg>
-                  </div>
-                  <div class="text-left">
-                    <p class="font-medium text-gray-900">
-                      {{ uploadedFile.name }}
-                    </p>
-                    <p class="text-sm text-gray-500">
-                      {{ formatFileSize(uploadedFile.size) }}
-                    </p>
+                  <div class="bg-gray-100 rounded-lg p-3">
+                    <p class="text-sm">리노에게 회의에 관한 내용을 물어보세요.</p>
                   </div>
                 </div>
-                <button
-                  @click="removeFile"
-                  class="text-gray-400 hover:text-red-600 transition-colors"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                <!-- Chat Messages -->
+                <div v-for="(message, index) in chatMessages" :key="index" class="flex" :class="message.isUser ? 'justify-end' : 'items-start gap-3'">
+                   <div v-if="!message.isUser" class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                     <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707"></path></svg>
+                   </div>
+                   <div class="rounded-lg p-3 max-w-xs" :class="message.isUser ? 'bg-indigo-500 text-white' : 'bg-gray-100'">
+                    <p class="text-sm">{{ message.text }}</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Chat Input -->
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="userMessage"
+                  @keyup.enter="handleSendMessage"
+                  placeholder="무엇이든 물어보세요."
+                  class="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button @click="handleSendMessage" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
                 </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Summary -->
+            <div class="bg-white rounded-lg shadow-sm p-8 overflow-y-auto h-[70vh]">
+              <h2 class="text-xl font-semibold mb-6">회의 요약</h2>
+              <div class="space-y-6 text-gray-800">
+                <div>
+                  <h3 class="font-semibold text-lg mb-2">1. 회의 요약</h3>
+                  <p class="whitespace-pre-wrap text-sm">{{ report.summary }}</p>
+                </div>
+                <div v-if="reportDetails.risks_and_concerns">
+                  <h3 class="font-semibold text-lg mb-2">2. 주요 논의사항</h3>
+                  <ul class="list-disc list-inside space-y-1 text-sm">
+                    <li v-for="(item, i) in reportDetails.risks_and_concerns" :key="'risk-'+i">{{ item }}</li>
+                  </ul>
+                </div>
+                <div v-if="reportDetails.decisions">
+                  <h3 class="font-semibold text-lg mb-2">3. 결정사항</h3>
+                  <ul class="list-disc list-inside space-y-1 text-sm">
+                    <li v-for="(item, i) in reportDetails.decisions" :key="'decision-'+i">{{ item }}</li>
+                  </ul>
+                </div>
+                <div v-if="report.action_items && report.action_items.length > 0">
+                  <h3 class="font-semibold text-lg mb-2">4. 액션 아이템</h3>
+                  <ul class="list-disc list-inside space-y-1 text-sm">
+                    <li v-for="item in report.action_items" :key="item.item_id">{{ item.title }} - {{ item.assignee }}</li>
+                  </ul>
+                </div>
+                <div v-if="reportDetails.next_steps">
+                  <h3 class="font-semibold text-lg mb-2">5. 향후 일정 및 계획</h3>
+                  <ul class="list-disc list-inside space-y-1 text-sm">
+                    <li v-for="(item, i) in reportDetails.next_steps" :key="'step-'+i">{{ item }}</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -294,144 +111,126 @@
 
 <script>
 import MainLayout from "../layouts/MainLayout.vue";
-import TimelineItem from "../components/TimelineItem.vue";
+import { getMeetingReport, chatWithMeeting } from "../api/meetings.js";
 
 export default {
-  name: "RecordingNote",
+  name: "NoteDone",
   components: {
     MainLayout,
-    TimelineItem,
   },
   data() {
     return {
-      isPlaying: false,
-      isRecordingStarted: false,
-      playbackSpeed: 1,
-      noteTitle: "새 녹음",
-      noteCategory: "기본 폴더",
-      noteDate: "",
-      noteDuration: "",
-      summaryCounter: 1,
-      uploadedFile: null,
-      isDragging: false,
-      leftTimeline: [
-        {
-          time: "01:00",
-          title: "메모 작성 방법",
-          points: [
-            "PC에서 클로바노트 웹사이트 접속",
-            "녹음 중인 노트나 생성된 노트에 메모 추가",
-          ],
-        },
-      ],
-      rightTimeline: [
-        {
-          time: "03:00",
-          title: "메모 작성 방법",
-          points: [
-            "PC에서 클로바노트 웹사이트 접속",
-            "녹음 중인 노트나 생성된 노트에 메모 추가",
-          ],
-        },
-      ],
+      report: null,
+      isLoading: true,
+      error: null,
+      noteTitle: '회의록',
+      noteCategory: '기본 폴더',
+      noteDate: '',
+      chatMessages: [],
+      userMessage: '',
     };
   },
+  computed: {
+    reportDetails() {
+      if (!this.report || !this.report.details) return {};
+      try {
+        return JSON.parse(this.report.details);
+      } catch (e) {
+        console.error("Failed to parse report details:", e);
+        return {};
+      }
+    },
+    formattedDate() {
+      if (!this.report) return this.noteDate;
+      return new Date(this.report.created_at).toLocaleString('ko-KR');
+    }
+  },
+  methods: {
+    async handleSendMessage() {
+      const messageText = this.userMessage.trim();
+      if (!messageText) return;
+
+      this.chatMessages.push({ text: messageText, isUser: true });
+      this.userMessage = '';
+
+      // Dummy response for UI check
+      setTimeout(() => {
+          this.chatMessages.push({ text: `"${messageText}"에 대한 답변입니다.`, isUser: false });
+      }, 1000);
+
+      /*
+      // NOTE: Real API call is commented out.
+      try {
+        const meetingId = this.$route.params.id;
+        const res = await chatWithMeeting(meetingId, messageText);
+        this.chatMessages.push({ text: res.answer, isUser: false });
+      } catch (err) {
+        this.chatMessages.push({ text: '오류가 발생했습니다: ' + err.message, isUser: false });
+      }
+      */
+    }
+  },
   mounted() {
+    // Load initial data from localStorage
     const savedNote = localStorage.getItem("currentNote");
     if (savedNote) {
       const note = JSON.parse(savedNote);
       this.noteTitle = note.title;
       this.noteCategory = note.category;
       this.noteDate = note.date;
-      this.noteDuration = note.duration;
-      this.isRecordingStarted = true;
     }
-  },
-  //TODO:파일 업로드 기능 수정(작동X)
-  methods: {
-    openFileDialog() {
-      this.$refs.fileInput.click();
-    },
-    handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        if (
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf")
-        ) {
-          this.uploadedFile = file;
-          console.log("PDF 업로드 성공:", file.name);
-        } else {
-          alert("PDF 파일만 업로드 가능합니다.");
-        }
-      }
-    },
-    handleDrop(event) {
-      this.isDragging = false;
-      const file = event.dataTransfer.files[0];
-      if (file) {
-        if (
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf")
-        ) {
-          this.uploadedFile = file;
-          console.log("PDF 드롭 성공:", file.name);
-        } else {
-          alert("PDF 파일만 업로드 가능합니다.");
-        }
-      }
-    },
-    removeFile() {
-      this.uploadedFile = null;
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = "";
-      }
-    },
-    formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + " B";
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-    },
-    completeRecording() {
-      if (this.isRecordingStarted) {
-        this.$router.push("/note-done");
-      } else {
-        this.isRecordingStarted = true;
-        this.isPlaying = true;
-      }
-    },
-    addSummary() {
-      const newTime = `0${this.summaryCounter + 1}:00`;
-      const newItem = {
-        time: newTime,
-        title: "중간 요약 " + (this.summaryCounter + 1),
-        points: ["회의 주요 내용 요약", "결정된 사항 정리", "다음 단계 계획"],
-      };
 
-      this.leftTimeline.push(newItem);
-      this.rightTimeline.push({
-        ...newItem,
-        time: `0${this.summaryCounter + 3}:00`,
-      });
+    // --- Dummy Data Implementation ---
+    console.log("Using dummy data for NoteDone.vue");
+    const dummyReport = {
+        summary: "청년 시기의 중요성에 대한 논의를 중심으로 회의가 진행되었습니다. 자기 주체적인 선택과 부모로부터의 독립이 중요한 시기로 인식되었습니다.",
+        details: JSON.stringify({
+            risks_and_concerns: [
+                "청년 시기의 정의와 중요성에 대한 공통 인식 확립",
+                "자기 주체적 선택과 부모로부터의 독립이 주요 요소로 부각",
+                "청년 시기에 필요한 지원과 교육 프로그램에 대한 논의"
+            ],
+            decisions: [
+                "청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다.",
+                "청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다."
+            ],
+            next_steps: [
+                "교육 및 지원 프로그램 개발 완료 후 다음 회의에서 보고 예정",
+                "청년 시기 중요성 강조하는 캠페인 계획 수립하여 추후 발표 예정"
+            ]
+        }),
+        action_items: [
+            { item_id: 1, title: "교육 프로그램 개발", assignee: "A팀 담당" },
+            { item_id: 2, title: "지원 프로그램 마련", assignee: "B팀 담당" },
+        ],
+        created_at: new Date().toISOString(),
+    };
+    this.report = dummyReport;
+    this.isLoading = false;
 
-      this.summaryCounter++;
-    },
-    togglePlay() {
-      if (this.isRecordingStarted) {
-        this.isPlaying = !this.isPlaying;
-      }
-    },
-    changeSpeed() {
-      const speeds = [1, 1.5, 2, 0.5];
-      const currentIndex = speeds.indexOf(this.playbackSpeed);
-      this.playbackSpeed = speeds[(currentIndex + 1) % speeds.length];
-    },
-    rewind() {
-      console.log("5초 뒤로");
-    },
-    forward() {
-      console.log("5초 앞으로");
-    },
+    this.chatMessages = [
+        { text: "회의에서 나온 결정사항들을 정리해줘.", isUser: true },
+        { text: "네, 회의의 결정사항은 다음과 같습니다: 1. 청년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다. 2. 청년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.", isUser: false },
+    ];
+    // --- End of Dummy Data ---
+
+    /*
+    // NOTE: Real API call logic is commented out.
+    const meetingId = this.$route.params.id;
+    if (!meetingId) {
+      this.error = "회의 ID를 찾을 수 없습니다.";
+      this.isLoading = false;
+      return;
+    }
+
+    try {
+      this.report = await getMeetingReport(meetingId);
+    } catch (err) {
+      this.error = err.message || "회의록을 불러오는 데 실패했습니다.";
+    } finally {
+      this.isLoading = false;
+    }
+    */
   },
 };
 </script>

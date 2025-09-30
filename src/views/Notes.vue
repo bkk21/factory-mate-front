@@ -44,6 +44,7 @@
 <script>
 import MainLayout from "../layouts/MainLayout.vue";
 import NoteItem from "../components/NoteItem.vue";
+import { createRecording } from "../api/meetings.js";
 
 export default {
   name: "Notes",
@@ -56,43 +57,100 @@ export default {
       notes: [
         {
           id: 1,
-          title: "녹음 파일 1",
+          external_id: "meeting-001-completed",
+          title: "녹음 파일 1 (완료)",
           content:
-            "반갑습니다. 자는 위클라 메이트 담당자입니다. 궁금한 내용이 있으면 편하게 물어봐 주세요.",
+            "완료된 회의록입니다. 요약 및 액션 아이템을 확인하세요.",
           category: "전체 노트",
-          date: "2025.09.23 화 오전 12:00",
-          duration: "3분",
+          date: "2025.09.23 화 오전 11:00",
+          duration: "30분",
+          status: "completed",
         },
         {
           id: 2,
-          title: "녹음 파일 2",
+          external_id: "meeting-002-in-progress",
+          title: "녹음 파일 2 (진행중)",
           content:
-            "반갑습니다. 자는 위클라 메이트 담당자입니다. 궁금한 내용이 있으면 편하게 물어봐 주세요.",
+            "현재 녹음이 진행중인 회의입니다. 중간 요약을 확인하세요.",
           category: "전체 노트",
-          date: "2025.09.23 화 오전 12:00",
-          duration: "3분",
+          date: "2025.09.24 수 오후 2:00",
+          duration: "15분",
+          status: "recording",
         },
         {
           id: 3,
-          title: "녹음 파일 3",
+          external_id: "meeting-003-completed",
+          title: "녹음 파일 3 (완료)",
           content:
-            "반갑습니다. 자는 위클라 메이트 담당자입니다. 궁금한 내용이 있으면 편하게 물어봐 주세요.",
+            "완료된 회의록입니다. 요약 및 액션 아이템을 확인하세요.",
           category: "전체 노트",
-          date: "2025.09.23 화 오전 12:00",
-          duration: "3분",
+          date: "2025.09.25 목 오전 10:00",
+          duration: "1시간 5분",
+          status: "completed",
         },
       ],
     };
   },
   methods: {
     handleNoteClick(note) {
-      // 완료된 녹음 파일 -> NoteDone 페이지로 이동
       localStorage.setItem("currentNote", JSON.stringify(note));
-      this.$router.push("/note-done");
+      if (note.status === 'completed') {
+        this.$router.push(`/note-done/${note.external_id}`);
+      }
+      else {
+        this.$router.push("/recording-note");
+      }
     },
-    handleStartRecording() {
-      // 새 녹음 시작 -> RecordingNote 페이지로 이동
-      localStorage.removeItem("currentNote");
+    async handleStartRecording() {
+      /* 
+      // NOTE: The following is the correct implementation for production.
+      // It is temporarily commented out to allow frontend development without a running backend.
+      try {
+        // TODO: Replace with actual project ID and user ID from auth context
+        const projectExternalId = 'proj-123'; 
+        const creatorId = 1;
+        const newTitle = `새 녹음 - ${new Date().toLocaleString('ko-KR')}`;
+
+        const newRecordingData = {
+          title: newTitle,
+          creator_id: creatorId,
+        };
+
+        console.log("새 녹음 생성 중...");
+        const newRecording = await createRecording(projectExternalId, newRecordingData);
+        console.log("새 녹음 생성 완료:", newRecording);
+
+        const note = {
+          id: newRecording.meeting_id, // The object is still a 'meeting' from the backend
+          external_id: newRecording.external_id,
+          title: newRecording.title,
+          category: "기본 폴더", // Or from project data
+          date: new Date(newRecording.created_at).toLocaleString('ko-KR'),
+          duration: "진행 중",
+          status: "recording",
+        };
+
+        localStorage.setItem("currentNote", JSON.stringify(note));
+        this.$router.push("/recording-note");
+
+      } catch (error) {
+        console.error("녹음 생성 실패:", error);
+        alert(`새 녹음 생성에 실패했습니다: ${error.message}`);
+      }
+      */
+
+      // Temporary implementation for frontend development:
+      console.log("새 녹음 시작 (임시 데이터 사용)");
+      const tempNote = {
+        id: Date.now(),
+        external_id: `temp-recording-${Date.now()}`,
+        title: `새 녹음 - ${new Date().toLocaleString('ko-KR')}`,
+        category: "기본 폴더",
+        date: new Date().toLocaleString('ko-KR'),
+        duration: "진행 중",
+        status: "recording",
+      };
+      localStorage.setItem("currentNote", JSON.stringify(tempNote));
       this.$router.push("/recording-note");
     },
   },

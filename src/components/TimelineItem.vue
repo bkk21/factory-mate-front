@@ -8,6 +8,7 @@
     
     <div class="bg-white rounded-lg p-4 shadow-sm">
       <h3 class="font-semibold text-gray-900 mb-2">{{ item.title }}</h3>
+      <p v-if="item.summary" class="text-sm text-gray-700 mb-3">{{ item.summary }}</p>
       <ul class="space-y-1 text-sm text-gray-600">
         <li v-for="(point, index) in item.points" :key="index">- {{ point }}</li>
       </ul>

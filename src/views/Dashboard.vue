@@ -3,7 +3,7 @@
     <div class="p-8">
       <div class="max-w-[1400px] mx-auto">
         <div class="mb-8 flex items-center justify-between">
-          <h1 class="text-3xl font-bold text-gray-900">대시보드</h1>
+          <h1 class="text-3xl font-bold text-gray-900">DashBoard</h1>
 
           <div class="flex gap-4">
             <select

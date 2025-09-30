@@ -137,9 +137,9 @@
         <div class="grid grid-cols-2 gap-8">
           <div v-if="isRecordingStarted" class="bg-gray-50 rounded-lg p-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900">총간 요약</h2>
+              <h2 class="text-lg font-semibold text-gray-900">중간 요약</h2>
               <button
-                @click="addSummary"
+                @click="handleGenerateSummary"
                 class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
               >
                 중간 요약하기
@@ -187,14 +187,14 @@
             class="col-span-2 bg-white rounded-lg shadow-sm p-12 text-center"
           >
             <h2 class="text-xl font-semibold text-gray-900 mb-8">
-              PDF 업로드하기
+              PPT 업로드하기
             </h2>
 
-            <!-- File Input (Always visible for testing) -->
+            <!-- File Input -->
             <input
               ref="fileInput"
               type="file"
-              accept="application/pdf,.pdf"
+              accept=".ppt, .pptx, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation"
               @change="onFileChange"
               class="hidden"
             />
@@ -223,7 +223,7 @@
                       />
                     </svg>
                   </div>
-                  <p class="text-gray-500">PDF 파일을 클릭하여 업로드</p>
+                  <p class="text-gray-500">PPT 파일을 클릭하여 업로드</p>
                 </div>
               </button>
             </div>
@@ -233,10 +233,10 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+                    class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
                   >
                     <svg
-                      class="w-6 h-6 text-red-600"
+                      class="w-6 h-6 text-blue-600"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -284,7 +284,7 @@
 <script>
 import MainLayout from "../layouts/MainLayout.vue";
 import TimelineItem from "../components/TimelineItem.vue";
-import { uploadRecording } from "../api/meetings.js"; // API 함수 임포트
+import { uploadRecording, uploadPpt, generateSummary, endMeeting } from "../api/meetings.js";
 
 export default {
   name: "RecordingNote",
@@ -294,7 +294,7 @@ export default {
   },
   data() {
     return {
-      note: null, // note 객체 전체를 저장
+      note: null,
       isPlaying: false,
       isRecordingStarted: false,
       playbackSpeed: 1,
@@ -307,8 +307,8 @@ export default {
       uploadedFileSize: "",
       leftTimeline: [],
       rightTimeline: [],
-      mediaRecorder: null, // MediaRecorder 인스턴스
-      audioChunks: [], // 녹음된 오디오 청크
+      mediaRecorder: null,
+      audioChunks: [],
     };
   },
   mounted() {
@@ -328,15 +328,39 @@ export default {
     onFileChange(event) {
       const file = event.target.files[0];
       if (file) {
-        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        const allowedTypes = [
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ];
+        const allowedExtensions = [".ppt", ".pptx"];
+        const fileExtension = "." + file.name.split('.').pop().toLowerCase();
+
+        if (allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension)) {
           this.uploadedFileName = file.name;
           this.uploadedFileSize = this.formatFileSize(file.size);
-          alert("PDF 업로드 성공: " + file.name);
+          this.uploadPptFile(file);
         } else {
-          alert("PDF 파일만 업로드 가능합니다.");
+          alert("PPT 파일(.ppt, .pptx)만 업로드 가능합니다.");
           event.target.value = "";
         }
       }
+    },
+    async uploadPptFile(file) {
+        if (!this.note || !this.note.external_id) {
+          alert("회의 정보를 찾을 수 없어 PPT를 업로드할 수 없습니다.");
+          if (!this.note) this.note = {};
+          this.note.external_id = 'test-meeting-123';
+        }
+        try {
+            console.log("PPT 업로드 시작...");
+            const result = await uploadPpt(this.note.external_id, file);
+            console.log("PPT 업로드 성공:", result);
+            alert("PPT 파일이 성공적으로 업로드되었습니다.");
+        } catch (error) {
+            console.error("PPT 파일 업로드 실패:", error);
+            alert(`PPT 파일 업로드 실패: ${error.message}`);
+            this.removeFile();
+        }
     },
     removeFile() {
       this.uploadedFileName = "";
@@ -350,17 +374,13 @@ export default {
     },
     async completeRecording() {
       if (this.isRecordingStarted) {
-        // 녹음 중지
         if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
-          this.mediaRecorder.stop(); // onstop 이벤트 핸들러가 호출됨
+          this.mediaRecorder.stop();
         }
       } else {
-        // 녹음 시작
         if (!this.note || !this.note.external_id) {
-          alert("회의 정보를 찾을 수 없습니다. 먼저 회의를 선택해주세요.");
-          // 테스트를 위한 임시 ID. 실제 앱에서는 회의 ID가 없으면 녹음을 막아야 합니다.
-          if (!this.note) this.note = {};
-          this.note.external_id = 'test-meeting-123';
+          alert("녹음 정보를 찾을 수 없습니다. 먼저 새 녹음을 시작해주세요.");
+          return;
         }
 
         try {
@@ -380,16 +400,23 @@ export default {
             this.isRecordingStarted = false;
             this.isPlaying = false;
 
-            // API 함수를 사용하여 업로드
             try {
-              console.log("업로드 시작...");
-              const result = await uploadRecording(this.note.external_id, audioBlob);
-              console.log("업로드 성공:", result);
-              alert("녹음 파일이 성공적으로 업로드되었습니다.");
-              this.$router.push("/note-done");
+              console.log("Final audio chunk uploading...");
+              await uploadRecording(this.note.external_id, audioBlob);
+              console.log("Final audio chunk upload successful.");
+
+              console.log("Ending meeting and generating report...");
+              // TODO: Replace with actual user ID and desired report type
+              const endRequestData = { report_type: 'DEFAULT', created_by: 1 };
+              const finalReport = await endMeeting(this.note.external_id, endRequestData);
+              console.log("Meeting ended successfully:", finalReport);
+
+              alert("녹음이 완료되어 최종 보고서가 생성되었습니다.");
+              this.$router.push(`/note-done/${this.note.external_id}`);
+
             } catch (error) {
-              console.error("녹음 파일 업로드 실패:", error);
-              alert(`녹음 파일 업로드 실패: ${error.message}`);
+              console.error("Failed to finalize recording:", error);
+              alert(`녹음 완료 처리 중 오류가 발생했습니다: ${error.message}`);
             }
           };
 
@@ -397,13 +424,37 @@ export default {
           this.isRecordingStarted = true;
           this.isPlaying = true;
         } catch (error) {
-          console.error("마이크 접근 오류:", error);
+          console.error("Error accessing microphone:", error);
           alert("마이크에 접근할 수 없습니다. 권한을 확인해주세요.");
         }
       }
     },
-    addSummary() {
-      // ... (기존 로직과 동일)
+    async handleGenerateSummary() {
+      if (!this.note || !this.note.external_id) {
+        alert("녹음 정보를 찾을 수 없어 요약을 생성할 수 없습니다.");
+        return;
+      }
+      try {
+        console.log("중간 요약 생성 중...");
+        const result = await generateSummary(this.note.external_id);
+        console.log("중간 요약 성공:", result);
+
+        const newTime = new Date(result.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        const newItem = {
+          time: newTime,
+          title: "중간 요약 " + this.summaryCounter,
+          summary: result.summary,
+          points: result.key_points,
+        };
+
+        this.leftTimeline.push(newItem);
+        this.summaryCounter++;
+        alert("중간 요약이 타임라인에 추가되었습니다.");
+
+      } catch (error) {
+        console.error("중간 요약 생성 실패:", error);
+        alert(`중간 요약 생성 실패: ${error.message}`);
+      }
     },
     togglePlay() {
       if (this.isRecordingStarted) {
@@ -411,7 +462,9 @@ export default {
       }
     },
     changeSpeed() {
-      // ... (기존 로직과 동일)
+      const speeds = [1, 1.5, 2, 0.5];
+      const currentIndex = speeds.indexOf(this.playbackSpeed);
+      this.playbackSpeed = speeds[(currentIndex + 1) % speeds.length];
     },
     rewind() {
       console.log("5초 뒤로");

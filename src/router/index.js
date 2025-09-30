@@ -35,7 +35,7 @@ const routes = [
     component: RecordingNote,
   },
   {
-    path: "/note-done",
+    path: "/note-done/:id",
     name: "NoteDone",
     component: NoteDone,
   },

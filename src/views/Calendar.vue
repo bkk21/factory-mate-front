@@ -4,7 +4,7 @@
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
-          <h1 class="text-3xl font-bold text-gray-900">회의 일정</h1>
+          <h1 class="text-3xl font-bold text-gray-900">Calendar</h1>
           <button class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
             새 일정 추가
           </button>
