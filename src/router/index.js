@@ -6,6 +6,7 @@ import Notes from "../views/Notes.vue";
 import RecordingNote from "../views/RecordingNote.vue";
 import NoteDone from "../views/NoteDone.vue";
 import Calendar from "../views/Calendar.vue";
+import Settings from "../views/Settings.vue";
 
 const routes = [
   {
@@ -42,6 +43,11 @@ const routes = [
     path: "/calendar",
     name: "Calendar",
     component: Calendar,
+  },
+  {
+    path: "/settings",
+    name: "Settings",
+    component: Settings,
   },
 ];
 

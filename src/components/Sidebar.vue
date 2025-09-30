@@ -122,7 +122,13 @@
 
     <!-- Settings Icon (Bottom) -->
     <button
-      class="w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-900"
+      @click="$router.push('/settings')"
+      class="w-10 h-10 flex items-center justify-center rounded-lg transition-colors"
+      :class="
+        isActive('/settings')
+          ? 'bg-indigo-100 text-indigo-600'
+          : 'text-gray-400 hover:bg-gray-100 hover:text-gray-900'
+      "
     >
       <svg
         class="w-6 h-6"

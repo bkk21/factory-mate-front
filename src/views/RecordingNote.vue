@@ -187,18 +187,79 @@
             class="col-span-2 bg-white rounded-lg shadow-sm p-12 text-center"
           >
             <h2 class="text-xl font-semibold text-gray-900 mb-8">
-              PPT 업로드하기
+              PDF 업로드하기
             </h2>
 
-            <div
-              class="border-2 border-dashed border-gray-300 rounded-lg p-12 hover:border-gray-400 transition-colors cursor-pointer"
-            >
-              <div class="flex flex-col items-center">
-                <div
-                  class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
+            <!-- File Input (Always visible for testing) -->
+            <input
+              ref="fileInput"
+              type="file"
+              accept="application/pdf,.pdf"
+              @change="onFileChange"
+              class="hidden"
+            />
+
+            <!-- Upload Area or File Display -->
+            <div v-if="!uploadedFileName">
+              <button
+                @click="clickFileInput"
+                class="border-2 border-dashed border-gray-300 rounded-lg p-12 hover:border-gray-400 transition-colors cursor-pointer w-full"
+              >
+                <div class="flex flex-col items-center">
+                  <div
+                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
+                  >
+                    <svg
+                      class="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                  </div>
+                  <p class="text-gray-500">PDF 파일을 클릭하여 업로드</p>
+                </div>
+              </button>
+            </div>
+
+            <!-- Uploaded File Display -->
+            <div v-else class="border-2 border-gray-300 rounded-lg p-6">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-red-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div class="text-left">
+                    <p class="font-medium text-gray-900">
+                      {{ uploadedFileName }}
+                    </p>
+                    <p class="text-sm text-gray-500">{{ uploadedFileSize }}</p>
+                  </div>
+                </div>
+                <button
+                  @click="removeFile"
+                  class="text-gray-400 hover:text-red-600 transition-colors"
                 >
                   <svg
-                    class="w-8 h-8 text-gray-400"
+                    class="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -207,11 +268,10 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                </div>
-                <p class="text-gray-500">파일을 드래그하거나 클릭하여 업로드</p>
+                </button>
               </div>
             </div>
           </div>
@@ -241,6 +301,8 @@ export default {
       noteDate: "",
       noteDuration: "",
       summaryCounter: 1,
+      uploadedFileName: "",
+      uploadedFileSize: "",
       leftTimeline: [
         {
           time: "01:00",
@@ -275,18 +337,36 @@ export default {
     }
   },
   methods: {
-    startRecording() {
-      this.isRecordingStarted = !this.isRecordingStarted;
-      if (this.isRecordingStarted) {
-        this.isPlaying = true;
+    clickFileInput() {
+      this.$refs.fileInput.click();
+    },
+    onFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+          this.uploadedFileName = file.name;
+          this.uploadedFileSize = this.formatFileSize(file.size);
+          alert("PDF 업로드 성공: " + file.name);
+        } else {
+          alert("PDF 파일만 업로드 가능합니다.");
+          event.target.value = "";
+        }
       }
+    },
+    removeFile() {
+      this.uploadedFileName = "";
+      this.uploadedFileSize = "";
+      this.$refs.fileInput.value = "";
+    },
+    formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
     },
     completeRecording() {
       if (this.isRecordingStarted) {
-        // 녹음 완료 -> NoteDone 페이지로 이동
         this.$router.push("/note-done");
       } else {
-        // 녹음 시작
         this.isRecordingStarted = true;
         this.isPlaying = true;
       }
