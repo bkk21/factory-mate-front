@@ -25,12 +25,12 @@
 
       <!-- Login Form -->
       <div class="space-y-4">
-        <!-- ID Input -->
+        <!-- Email Input -->
         <div>
           <input
             type="text"
-            placeholder="아이디"
-            v-model="userId"
+            placeholder="이메일"
+            v-model="email"
             class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             @keyup.enter="handleLogin"
           />
@@ -60,19 +60,37 @@
 </template>
 
 <script>
+import { login } from "../api/auth.js";
+
 export default {
   name: "LoginPage",
   data() {
     return {
-      userId: "",
+      email: "",
       password: "",
     };
   },
   methods: {
-    handleLogin() {
-      // Validation
-      if (!this.userId.trim()) {
-        alert("아이디를 입력해주세요!");
+    async handleLogin() {
+      // Temporary backdoor for development
+      if (this.email === '1111@test.ac.kr' && this.password === '1111') {
+        console.log("개발용 임시 로그인 성공");
+        const dummyUser = {
+          user_id: 1111,
+          external_id: 'user-1111-dummy',
+          org_id: 1,
+          role_global: 'admin',
+          created_at: new Date().toISOString(),
+          email: '1111@test.com',
+          display_name: 'Test User'
+        };
+        localStorage.setItem("user", JSON.stringify(dummyUser));
+        this.$router.push("/projects");
+        return;
+      }
+
+      if (!this.email.trim()) {
+        alert("이메일을 입력해주세요!");
         return;
       }
 
@@ -81,9 +99,21 @@ export default {
         return;
       }
 
-      // 로그인 성공 시 프로젝트 선택 페이지로 이동
-      console.log("로그인 성공:", this.userId);
-      this.$router.push("/projects");
+      try {
+        console.log("로그인 시도 중...", this.email);
+        const userData = await login(this.email, this.password);
+        console.log("로그인 성공:", userData);
+
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Redirect to the projects page
+        this.$router.push("/projects");
+
+      } catch (error) {
+        console.error("로그인 실패:", error);
+        alert(`로그인에 실패했습니다: ${error.message}`);
+      }
     },
   },
 };

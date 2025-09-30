@@ -109,7 +109,7 @@ export default {
         // TODO: Replace with actual project ID and user ID from auth context
         const projectExternalId = 'proj-123'; 
         const creatorId = 1;
-        const newTitle = `새 녹음 - ${new Date().toLocaleString('ko-KR')}`;
+        const newTitle = `녹음 - ${new Date().toLocaleString('ko-KR')}`;
 
         const newRecordingData = {
           title: newTitle,
@@ -144,7 +144,7 @@ export default {
       const tempNote = {
         id: Date.now(),
         external_id: `temp-recording-${Date.now()}`,
-        title: `새 녹음 - ${new Date().toLocaleString('ko-KR')}`,
+        title: `녹음 - ${new Date().toLocaleString('ko-KR')}`,
         category: "기본 폴더",
         date: new Date().toLocaleString('ko-KR'),
         duration: "진행 중",
