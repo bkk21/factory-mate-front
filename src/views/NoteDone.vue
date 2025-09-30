@@ -5,6 +5,7 @@
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
           <div class="flex items-center gap-4">
+            <!-- Back Button -->
             <button
               @click="$router.push('/notes')"
               class="text-gray-600 hover:text-gray-900"
@@ -24,6 +25,7 @@
               </svg>
             </button>
 
+            <!-- Title -->
             <div>
               <div class="flex items-center gap-2">
                 <svg
@@ -50,175 +52,51 @@
               </div>
             </div>
           </div>
-
-          <button
-            @click="completeRecording"
-            class="px-6 py-2 rounded-lg transition-colors"
-            :class="
-              isRecordingStarted
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            "
-          >
-            {{ isRecordingStarted ? "녹음 완료하기" : "녹음 시작하기" }}
-          </button>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-gray-500 text-sm">00:00</div>
-            <div class="text-gray-500 text-sm">05:00</div>
-          </div>
-
-          <div class="flex items-center justify-center gap-8 mb-4">
-            <button
-              @click="changeSpeed"
-              class="text-gray-600 hover:text-gray-900 font-medium"
-            >
-              {{ playbackSpeed }}x
-            </button>
-
-            <button @click="rewind" class="text-gray-600 hover:text-gray-900">
-              <svg
-                class="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"
-                />
-              </svg>
-            </button>
-
-            <button
-              @click="togglePlay"
-              class="w-16 h-16 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors"
-            >
-              <svg
-                v-if="!isRecordingStarted || !isPlaying"
-                class="w-8 h-8 text-white ml-1"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <svg
-                v-else
-                class="w-8 h-8 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            </button>
-
-            <button @click="forward" class="text-gray-600 hover:text-gray-900">
-              <svg
-                class="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
+        <!-- Content Area: Chat & Summary -->
         <div class="grid grid-cols-2 gap-8">
-          <div v-if="isRecordingStarted" class="bg-gray-50 rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-semibold text-gray-900">총간 요약</h2>
-              <button
-                @click="addSummary"
-                class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
-              >
-                중간 요약하기
+          <!-- Left: Chat Interface -->
+          <div
+            class="bg-white rounded-lg shadow-sm flex flex-col"
+            style="height: calc(100vh - 200px)"
+          >
+            <!-- Chat Header -->
+            <div class="p-4 border-b flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-900">회의록 Chat</h2>
+              <button class="text-gray-400 hover:text-gray-600">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               </button>
             </div>
 
-            <div class="mb-6 flex items-start gap-2 text-sm text-gray-600">
-              <svg
-                class="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <!-- Chat Messages -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+              <!-- AI Message -->
+              <div
+                v-for="message in messages"
+                :key="message.id"
+                class="flex gap-3"
+                :class="message.isUser ? 'justify-end' : 'justify-start'"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span>지금까지의 회의 내용을 요약해 확인해보세요.</span>
-            </div>
-
-            <div class="space-y-6">
-              <TimelineItem
-                v-for="(item, index) in leftTimeline"
-                :key="index"
-                :item="item"
-              />
-            </div>
-          </div>
-
-          <div v-if="isRecordingStarted" class="bg-gray-50 rounded-lg p-6">
-            <div class="space-y-6">
-              <TimelineItem
-                v-for="(item, index) in rightTimeline"
-                :key="index"
-                :item="item"
-              />
-            </div>
-          </div>
-
-          <div
-            v-if="!isRecordingStarted"
-            class="col-span-2 bg-white rounded-lg shadow-sm p-12 text-center"
-          >
-            <h2 class="text-xl font-semibold text-gray-900 mb-8">
-              PDF 업로드하기
-            </h2>
-
-            <!-- Hidden File Input -->
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".pdf,application/pdf"
-              @change="handleFileSelect"
-              style="display: none"
-            />
-
-            <!-- Upload Area -->
-            <div v-if="!uploadedFile">
-              <label
-                class="border-2 border-dashed rounded-lg p-12 transition-colors cursor-pointer block"
-                :class="
-                  isDragging
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                "
-                @dragover.prevent="isDragging = true"
-                @dragleave.prevent="isDragging = false"
-                @drop.prevent="handleDrop"
-                @click="openFileDialog"
-              >
-                <div class="flex flex-col items-center pointer-events-none">
+                <!-- Avatar (AI only) -->
+                <div v-if="!message.isUser" class="flex-shrink-0">
                   <div
-                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
+                    class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center"
                   >
                     <svg
-                      class="w-8 h-8 text-gray-400"
+                      class="w-5 h-5 text-indigo-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -227,47 +105,39 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
                   </div>
-                  <p class="text-gray-500">
-                    PDF 파일을 드래그하거나 클릭하여 업로드
-                  </p>
                 </div>
-              </label>
+
+                <!-- Message Content -->
+                <div
+                  class="max-w-[70%] rounded-lg p-4"
+                  :class="
+                    message.isUser
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  "
+                >
+                  <p class="text-sm">{{ message.text }}</p>
+                </div>
+              </div>
             </div>
 
-            <!-- Uploaded File Display -->
-            <div v-else class="border-2 border-gray-300 rounded-lg p-6">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
-                  >
-                    <svg
-                      class="w-6 h-6 text-red-600"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
-                      />
-                      <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3" />
-                    </svg>
-                  </div>
-                  <div class="text-left">
-                    <p class="font-medium text-gray-900">
-                      {{ uploadedFile.name }}
-                    </p>
-                    <p class="text-sm text-gray-500">
-                      {{ formatFileSize(uploadedFile.size) }}
-                    </p>
-                  </div>
-                </div>
+            <!-- Chat Input -->
+            <div class="p-4 border-t">
+              <div class="flex gap-2">
+                <input
+                  v-model="newMessage"
+                  @keyup.enter="sendMessage"
+                  type="text"
+                  placeholder="무엇이든 물어보세요."
+                  class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
                 <button
-                  @click="removeFile"
-                  class="text-gray-400 hover:text-red-600 transition-colors"
+                  @click="sendMessage"
+                  class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
                 >
                   <svg
                     class="w-5 h-5"
@@ -279,10 +149,36 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                       stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                     />
                   </svg>
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Summary Content -->
+          <div
+            class="bg-white rounded-lg shadow-sm p-6 overflow-y-auto"
+            style="height: calc(100vh - 200px)"
+          >
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">회의 요약</h2>
+
+            <!-- Summary Sections -->
+            <div class="space-y-6">
+              <div v-for="(section, index) in summarySections" :key="index">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                  {{ index + 1 }}. {{ section.title }}
+                </h3>
+                <ul class="space-y-2 ml-4">
+                  <li
+                    v-for="(item, idx) in section.items"
+                    :key="idx"
+                    class="text-sm text-gray-700"
+                  >
+                    • {{ item }}
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -294,43 +190,71 @@
 
 <script>
 import MainLayout from "../layouts/MainLayout.vue";
-import TimelineItem from "../components/TimelineItem.vue";
 
 export default {
-  name: "RecordingNote",
+  name: "NoteDone",
   components: {
     MainLayout,
-    TimelineItem,
   },
   data() {
     return {
-      isPlaying: false,
-      isRecordingStarted: false,
-      playbackSpeed: 1,
-      noteTitle: "새 녹음",
+      noteTitle: "녹음 파일 1",
       noteCategory: "기본 폴더",
-      noteDate: "",
-      noteDuration: "",
-      summaryCounter: 1,
-      uploadedFile: null,
-      isDragging: false,
-      leftTimeline: [
+      noteDate: "2025.09.23 화 오전 12:00",
+      noteDuration: "3분",
+      newMessage: "",
+      messages: [
         {
-          time: "01:00",
-          title: "메모 작성 방법",
-          points: [
-            "PC에서 클로바노트 웹사이트 접속",
-            "녹음 중인 노트나 생성된 노트에 메모 추가",
-          ],
+          id: 1,
+          text: "AI에게 회의에 관한 내용을 물어보세요.",
+          isUser: false,
+        },
+        {
+          id: 2,
+          text: "회의에서 나온 결정사항들을 정리해줘.",
+          isUser: true,
+        },
+        {
+          id: 3,
+          text: "추후 일정과 계획에 대해 알려줘.",
+          isUser: true,
         },
       ],
-      rightTimeline: [
+      summarySections: [
         {
-          time: "03:00",
-          title: "메모 작성 방법",
-          points: [
-            "PC에서 클로바노트 웹사이트 접속",
-            "녹음 중인 노트나 생성된 노트에 메모 추가",
+          title: "회의 요약",
+          items: [
+            "회의는 정년 시기의 중요성에 대한 논의로 진행되었습니다.",
+            "정년 시기는 자기 주체적인 선택과 부모로부터의 독립이 중요한 시기로 인식되었습니다.",
+          ],
+        },
+        {
+          title: "주요 논의사항",
+          items: [
+            "정년 시기의 정의와 중요성에 대한 공통 의식 확립",
+            "자기 주체적 선택과 부모로부터의 독립이 주요 요소로 부각",
+            "정년 시기에 필요한 지원과 교육 프로그램에 대한 논의",
+          ],
+        },
+        {
+          title: "결정사항",
+          items: [
+            "정년 시기의 정의를 자기 주체적 선택과 부모로부터의 독립을 중심으로 한다.",
+            "정년 시기에 대한 교육 및 지원 프로그램을 개발하여 추후 시행한다.",
+          ],
+        },
+        {
+          title: "액션 아이템",
+          items: [
+            "교육 프로그램 개발: A 팀 담당",
+            "지원 프로그램 마련: B 팀 담당",
+          ],
+        },
+        {
+          title: "향후 일정 및 계획",
+          items: [
+            "교육 및 지원 프로그램 개발 완료 후 다음 회의에서 보고 예정",
+            "정년 시기에 대한 중요성을 강조하는 캠페인 계획 수립하여 추후 발표 예정",
           ],
         },
       ],
@@ -344,93 +268,27 @@ export default {
       this.noteCategory = note.category;
       this.noteDate = note.date;
       this.noteDuration = note.duration;
-      this.isRecordingStarted = true;
     }
   },
-  //TODO:파일 업로드 기능 수정(작동X)
   methods: {
-    openFileDialog() {
-      this.$refs.fileInput.click();
-    },
-    handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        if (
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf")
-        ) {
-          this.uploadedFile = file;
-          console.log("PDF 업로드 성공:", file.name);
-        } else {
-          alert("PDF 파일만 업로드 가능합니다.");
-        }
-      }
-    },
-    handleDrop(event) {
-      this.isDragging = false;
-      const file = event.dataTransfer.files[0];
-      if (file) {
-        if (
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf")
-        ) {
-          this.uploadedFile = file;
-          console.log("PDF 드롭 성공:", file.name);
-        } else {
-          alert("PDF 파일만 업로드 가능합니다.");
-        }
-      }
-    },
-    removeFile() {
-      this.uploadedFile = null;
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = "";
-      }
-    },
-    formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + " B";
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-    },
-    completeRecording() {
-      if (this.isRecordingStarted) {
-        this.$router.push("/note-done");
-      } else {
-        this.isRecordingStarted = true;
-        this.isPlaying = true;
-      }
-    },
-    addSummary() {
-      const newTime = `0${this.summaryCounter + 1}:00`;
-      const newItem = {
-        time: newTime,
-        title: "중간 요약 " + (this.summaryCounter + 1),
-        points: ["회의 주요 내용 요약", "결정된 사항 정리", "다음 단계 계획"],
-      };
+    sendMessage() {
+      if (this.newMessage.trim()) {
+        this.messages.push({
+          id: Date.now(),
+          text: this.newMessage,
+          isUser: true,
+        });
 
-      this.leftTimeline.push(newItem);
-      this.rightTimeline.push({
-        ...newItem,
-        time: `0${this.summaryCounter + 3}:00`,
-      });
+        setTimeout(() => {
+          this.messages.push({
+            id: Date.now() + 1,
+            text: "해당 내용에 대해 회의록을 검토하여 답변드리겠습니다.",
+            isUser: false,
+          });
+        }, 500);
 
-      this.summaryCounter++;
-    },
-    togglePlay() {
-      if (this.isRecordingStarted) {
-        this.isPlaying = !this.isPlaying;
+        this.newMessage = "";
       }
-    },
-    changeSpeed() {
-      const speeds = [1, 1.5, 2, 0.5];
-      const currentIndex = speeds.indexOf(this.playbackSpeed);
-      this.playbackSpeed = speeds[(currentIndex + 1) % speeds.length];
-    },
-    rewind() {
-      console.log("5초 뒤로");
-    },
-    forward() {
-      console.log("5초 앞으로");
     },
   },
 };
